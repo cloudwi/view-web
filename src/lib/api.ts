@@ -1,4 +1,4 @@
-import { ViewsResponse, SortType } from "@/types/view";
+import { ViewsResponse, SortType, CommentsResponse, Comment } from "@/types/view";
 
 interface FetchViewsParams {
   sort?: SortType;
@@ -107,6 +107,68 @@ export async function createView({ title, options }: CreateViewParams): Promise<
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.error || `뷰 생성 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+// 댓글 조회 API
+interface FetchCommentsParams {
+  viewId: number;
+  per_page?: number;
+  cursor?: string | null;
+}
+
+export async function fetchComments({
+  viewId,
+  per_page = 20,
+  cursor = null,
+}: FetchCommentsParams): Promise<CommentsResponse> {
+  const params = new URLSearchParams({
+    per_page: per_page.toString(),
+  });
+
+  if (cursor) {
+    params.append("cursor", cursor);
+  }
+
+  const response = await fetch(`/api/views/${viewId}/comments?${params}`, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`댓글 조회 실패: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+// 댓글 작성 API
+interface CreateCommentParams {
+  viewId: number;
+  content: string;
+}
+
+interface CreateCommentResponse {
+  data: Comment;
+}
+
+export async function createComment({ viewId, content }: CreateCommentParams): Promise<CreateCommentResponse> {
+  const response = await fetch(`/api/views/${viewId}/comments`, {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ content }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `댓글 작성 실패: ${response.status}`);
   }
 
   return response.json();

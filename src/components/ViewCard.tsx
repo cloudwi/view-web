@@ -2,6 +2,7 @@
 
 import { useState, useEffect, memo } from "react";
 import { voteOnView, cancelVote } from "@/lib/api";
+import CommentBottomSheet from "./CommentBottomSheet";
 
 interface Option {
   id: string;
@@ -22,6 +23,7 @@ interface ViewCardProps {
   author?: string;
   createdAt?: string;
   myVote?: MyVote | null;
+  commentsCount?: number;
 }
 
 function ViewCard({
@@ -32,6 +34,7 @@ function ViewCard({
   author = "익명",
   createdAt,
   myVote,
+  commentsCount: initialCommentsCount = 0,
 }: ViewCardProps) {
   // 이미 투표한 경우 초기 상태 설정
   const initialVotedOption = myVote?.option_id
@@ -46,6 +49,8 @@ function ViewCard({
   const [isVoting, setIsVoting] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
   const [showAllOptions, setShowAllOptions] = useState(false);
+  const [isCommentOpen, setIsCommentOpen] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(initialCommentsCount);
 
   const MAX_VISIBLE_OPTIONS = 5;
 
@@ -59,8 +64,10 @@ function ViewCard({
     setOptions(initialOptions);
     setTotalVotes(initialTotalVotes);
     setShowFeedback(votedOption !== null);
-    setShowAllOptions(false); // 카드 변경 시 접기
-  }, [id, myVote, initialOptions, initialTotalVotes]);
+    setShowAllOptions(false);
+    setIsCommentOpen(false);
+    setCommentsCount(initialCommentsCount);
+  }, [id, myVote, initialOptions, initialTotalVotes, initialCommentsCount]);
 
   const handleVote = async (optionId: string) => {
     if (hasVoted || isVoting) return;
@@ -321,7 +328,10 @@ function ViewCard({
                   </svg>
                   공유
                 </button>
-                <button className="flex items-center gap-1.5 rounded-full bg-card-bg border border-card-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-card-border">
+                <button
+                  onClick={() => setIsCommentOpen(true)}
+                  className="flex items-center gap-1.5 rounded-full bg-card-bg border border-card-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-card-border"
+                >
                   <svg
                     className="h-3.5 w-3.5"
                     fill="none"
@@ -335,7 +345,7 @@ function ViewCard({
                       d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                     />
                   </svg>
-                  의견
+                  의견{commentsCount > 0 && ` ${commentsCount}`}
                 </button>
                 <button
                   onClick={handleCancelVote}
@@ -371,6 +381,15 @@ function ViewCard({
           )}
         </div>
       </div>
+
+      {/* 댓글 바텀 시트 */}
+      <CommentBottomSheet
+        isOpen={isCommentOpen}
+        onClose={() => setIsCommentOpen(false)}
+        viewId={id}
+        viewTitle={question}
+        commentsCount={commentsCount}
+      />
     </div>
   );
 }

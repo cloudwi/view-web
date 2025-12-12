@@ -197,6 +197,7 @@ export default function Home() {
                   author={currentView.author.nickname}
                   createdAt={formatRelativeTime(currentView.created_at)}
                   myVote={currentView.my_vote}
+                  commentsCount={currentView.comments_count}
                 />
               ) : null}
             </div>

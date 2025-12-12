@@ -38,3 +38,28 @@ export interface ViewsResponse {
 }
 
 export type SortType = "latest" | "popular";
+
+// 댓글 관련 타입
+export interface CommentAuthor {
+  id: number;
+  nickname: string;
+}
+
+export interface Comment {
+  id: number;
+  content: string;
+  author: CommentAuthor;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CommentsMeta {
+  per_page: number;
+  has_next: boolean;
+  next_cursor: string | null;
+}
+
+export interface CommentsResponse {
+  data: Comment[];
+  meta: CommentsMeta;
+}
