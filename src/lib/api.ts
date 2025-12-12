@@ -80,3 +80,34 @@ export async function cancelVote(viewId: number): Promise<void> {
     throw new Error(`Failed to cancel vote: ${response.status}`);
   }
 }
+
+// 뷰 생성 API
+interface CreateViewParams {
+  title: string;
+  options: string[];
+}
+
+interface CreateViewResponse {
+  data: {
+    id: number;
+    title: string;
+  };
+}
+
+export async function createView({ title, options }: CreateViewParams): Promise<CreateViewResponse> {
+  const response = await fetch("/api/views", {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ title, options }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `뷰 생성 실패: ${response.status}`);
+  }
+
+  return response.json();
+}

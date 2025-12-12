@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import ViewCard from "@/components/ViewCard";
 import SwipeIndicator from "@/components/SwipeIndicator";
 import SearchFilter from "@/components/SearchFilter";
+import CreateViewModal from "@/components/CreateViewModal";
 import { useViews } from "@/hooks/useViews";
 import { formatRelativeTime } from "@/lib/utils";
 import { SortType } from "@/types/view";
@@ -12,6 +13,7 @@ import { SortType } from "@/types/view";
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const {
     views,
@@ -34,6 +36,12 @@ export default function Home() {
     setSort(sort);
     setCurrentIndex(0);
   }, [setSort]);
+
+  // 뷰 생성 성공 시 새로고침 및 첫 번째 카드로 이동
+  const handleCreateSuccess = useCallback(() => {
+    setCurrentIndex(0);
+    refresh();
+  }, [refresh]);
 
   // 마지막 카드 근처에서 미리 로드
   useEffect(() => {
@@ -91,7 +99,7 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen bg-background overflow-hidden">
-      <Header />
+      <Header onCreateSuccess={handleCreateSuccess} />
       <SwipeIndicator total={totalCards} current={currentIndex} />
 
       {/* Search & Filter */}
@@ -166,7 +174,10 @@ export default function Home() {
                       <p className="mb-6 text-text-muted">
                         직접 질문을 만들어 다른 사람들의 의견을 들어보세요
                       </p>
-                      <button className="btn-glow-3d rounded-full px-6 py-3 font-medium text-white">
+                      <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="btn-glow-3d rounded-full px-6 py-3 font-medium text-white"
+                      >
                         + 새로운 뷰 만들기
                       </button>
                     </>
@@ -234,7 +245,10 @@ export default function Home() {
       )}
 
       {/* Floating create button for mobile */}
-      <button className="btn-glow-pulse fixed bottom-8 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full text-white sm:hidden">
+      <button
+        onClick={() => setIsCreateModalOpen(true)}
+        className="btn-glow-pulse fixed bottom-8 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full text-white sm:hidden"
+      >
         <svg
           className="h-6 w-6"
           fill="none"
@@ -249,6 +263,13 @@ export default function Home() {
           />
         </svg>
       </button>
+
+      {/* Create View Modal */}
+      <CreateViewModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={handleCreateSuccess}
+      />
     </div>
   );
 }

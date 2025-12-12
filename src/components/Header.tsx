@@ -1,13 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, memo } from "react";
 import LoginModal from "./LoginModal";
+import CreateViewModal from "./CreateViewModal";
 import { useAuth } from "@/contexts/AuthContext";
 
-export default function Header() {
+interface HeaderProps {
+  onCreateSuccess?: () => void;
+}
+
+function Header({ onCreateSuccess }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { isAuthenticated, isLoading, logout } = useAuth();
 
   return (
@@ -32,7 +38,10 @@ export default function Header() {
               <div className="h-9 w-9 animate-pulse rounded-full bg-card-bg" />
             ) : isAuthenticated ? (
               <>
-                <button className="btn-3d hidden rounded-full px-4 py-2 text-sm font-medium text-white sm:block">
+                <button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="btn-3d hidden rounded-full px-4 py-2 text-sm font-medium text-white sm:block"
+                >
                   + 뷰 만들기
                 </button>
                 {/* 유저 아이콘 드롭다운 */}
@@ -104,7 +113,13 @@ export default function Header() {
             <nav className="flex flex-col gap-3">
               {isAuthenticated ? (
                 <>
-                  <button className="btn-3d rounded-full px-4 py-2 text-sm font-medium text-white">
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      setIsCreateModalOpen(true);
+                    }}
+                    className="btn-3d rounded-full px-4 py-2 text-sm font-medium text-white"
+                  >
                     + 뷰 만들기
                   </button>
                   <button className="rounded-lg px-4 py-2 text-left text-sm text-text-muted transition-colors hover:bg-card-bg hover:text-accent-primary">
@@ -140,6 +155,14 @@ export default function Header() {
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
       />
+
+      <CreateViewModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={onCreateSuccess}
+      />
     </>
   );
 }
+
+export default memo(Header);
