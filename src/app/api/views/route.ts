@@ -74,8 +74,10 @@ export async function POST(request: NextRequest) {
         "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify({
-        title: title.trim(),
-        options: options.map((opt: string) => ({ content: opt.trim() })),
+        view: {
+          title: title.trim(),
+          view_options_attributes: options.map((opt: string) => ({ content: opt.trim() })),
+        },
       }),
     });
 
