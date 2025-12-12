@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Option {
   id: string;
@@ -10,26 +10,46 @@ interface Option {
 }
 
 interface ViewCardProps {
-  id: string;
+  id: number;
   question: string;
   options: Option[];
   totalVotes: number;
   author?: string;
   createdAt?: string;
+  myVote?: number | null;
 }
 
 export default function ViewCard({
+  id,
   question,
   options: initialOptions,
   totalVotes: initialTotalVotes,
   author = "익명",
   createdAt,
+  myVote,
 }: ViewCardProps) {
-  const [hasVoted, setHasVoted] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  // 이미 투표한 경우 초기 상태 설정
+  const initialVotedOption = myVote !== null && myVote !== undefined
+    ? initialOptions.find(opt => opt.id === myVote.toString())?.id || null
+    : null;
+
+  const [hasVoted, setHasVoted] = useState(initialVotedOption !== null);
+  const [selectedOption, setSelectedOption] = useState<string | null>(initialVotedOption);
   const [options, setOptions] = useState(initialOptions);
   const [totalVotes, setTotalVotes] = useState(initialTotalVotes);
-  const [showFeedback, setShowFeedback] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(initialVotedOption !== null);
+
+  // props 변경 시 상태 동기화
+  useEffect(() => {
+    const votedOption = myVote !== null && myVote !== undefined
+      ? initialOptions.find(opt => opt.id === myVote.toString())?.id || null
+      : null;
+    setHasVoted(votedOption !== null);
+    setSelectedOption(votedOption);
+    setOptions(initialOptions);
+    setTotalVotes(initialTotalVotes);
+    setShowFeedback(votedOption !== null);
+  }, [id, myVote, initialOptions, initialTotalVotes]);
 
   const handleVote = (optionId: string) => {
     if (hasVoted) return;
@@ -68,7 +88,7 @@ export default function ViewCard({
         {/* Card Header */}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-accent-primary to-accent-secondary" />
+            <div className="h-8 w-8 rounded-full bg-accent-primary" />
             <span className="text-sm text-text-muted">{author}</span>
           </div>
           {createdAt && (
@@ -161,7 +181,7 @@ export default function ViewCard({
 
         {/* Feedback message */}
         {showFeedback && (
-          <div className="mt-6 rounded-xl bg-gradient-to-r from-accent-primary/20 to-accent-secondary/20 p-4 text-center animate-fade-in">
+          <div className="mt-6 rounded-xl bg-accent-primary/10 border border-accent-primary/20 p-4 text-center animate-fade-in">
             <p className="text-sm font-medium text-accent-primary">
               {getMyRank()}
             </p>

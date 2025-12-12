@@ -2,10 +2,12 @@
 
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 function AuthCallback() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { checkAuth } = useAuth();
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -19,20 +21,21 @@ function AuthCallback() {
         },
         body: JSON.stringify({ token }),
       })
-        .then((res) => {
+        .then(async (res) => {
           if (res.ok) {
+            await checkAuth(); // 인증 상태 갱신
             router.push("/");
           } else {
-            router.push("/login?error=auth_failed");
+            router.push("/?error=auth_failed");
           }
         })
         .catch(() => {
-          router.push("/login?error=auth_failed");
+          router.push("/?error=auth_failed");
         });
     } else {
-      router.push("/login?error=no_token");
+      router.push("/?error=no_token");
     }
-  }, [searchParams, router]);
+  }, [searchParams, router, checkAuth]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">

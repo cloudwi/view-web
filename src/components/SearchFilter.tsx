@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-export type SortType = "latest" | "popular";
+import { SortType } from "@/types/view";
 
 interface SearchFilterProps {
   onSearch: (query: string) => void;
