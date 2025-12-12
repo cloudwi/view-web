@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, memo, useCallback } from "react";
+import { useState, useEffect, memo } from "react";
 import { voteOnView, cancelVote } from "@/lib/api";
 
 interface Option {

@@ -25,11 +25,6 @@ function LoginModal({ isOpen, onClose }: LoginModalProps) {
     };
   }, [isOpen, onClose, isLoading]);
 
-  // 모달 닫힐 때 로딩 상태 초기화
-  useEffect(() => {
-    if (!isOpen) setIsLoading(false);
-  }, [isOpen]);
-
   const handleKakaoLogin = useCallback(() => {
     setIsLoading(true);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";

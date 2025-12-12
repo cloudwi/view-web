@@ -56,10 +56,11 @@ export default function Home() {
 
   const totalCards = filteredViews.length + 1;
 
-  // 검색어 변경 시 인덱스 리셋
-  useEffect(() => {
+  // 검색어 변경 핸들러 (인덱스 리셋 포함)
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
     setCurrentIndex(0);
-  }, [searchQuery]);
+  }, []);
 
   const goToNext = useCallback(() => {
     setCurrentIndex((prev) => (prev < totalCards - 1 ? prev + 1 : prev));
@@ -96,7 +97,7 @@ export default function Home() {
       {/* Search & Filter */}
       <div className="fixed top-16 left-0 right-0 z-30 py-3 bg-background/90 backdrop-blur-sm border-b border-card-border/50">
         <SearchFilter
-          onSearch={setSearchQuery}
+          onSearch={handleSearch}
           onSortChange={handleSortChange}
           currentSort={currentSort}
         />
