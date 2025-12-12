@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo, memo } from "react";
+
 interface SwipeIndicatorProps {
   total: number;
   current: number;
@@ -7,31 +9,26 @@ interface SwipeIndicatorProps {
 
 const MAX_DOTS = 7;
 
-export default function SwipeIndicator({ total, current }: SwipeIndicatorProps) {
-  // 표시할 인디케이터 범위 계산
-  const getVisibleRange = () => {
+function SwipeIndicator({ total, current }: SwipeIndicatorProps) {
+  const { start, end, showStartEllipsis, showEndEllipsis } = useMemo(() => {
     if (total <= MAX_DOTS) {
-      return { start: 0, end: total };
+      return { start: 0, end: total, showStartEllipsis: false, showEndEllipsis: false };
     }
 
     const half = Math.floor(MAX_DOTS / 2);
-    let start = current - half;
-    let end = current + half + 1;
+    let s = current - half;
+    let e = current + half + 1;
 
-    if (start < 0) {
-      start = 0;
-      end = MAX_DOTS;
-    } else if (end > total) {
-      end = total;
-      start = total - MAX_DOTS;
+    if (s < 0) {
+      s = 0;
+      e = MAX_DOTS;
+    } else if (e > total) {
+      e = total;
+      s = total - MAX_DOTS;
     }
 
-    return { start, end };
-  };
-
-  const { start, end } = getVisibleRange();
-  const showStartEllipsis = start > 0;
-  const showEndEllipsis = end < total;
+    return { start: s, end: e, showStartEllipsis: s > 0, showEndEllipsis: e < total };
+  }, [total, current]);
 
   return (
     <div className="fixed right-4 top-1/2 -translate-y-1/2 z-40 hidden flex-col items-center gap-1.5 md:flex">
@@ -57,3 +54,5 @@ export default function SwipeIndicator({ total, current }: SwipeIndicatorProps) 
     </div>
   );
 }
+
+export default memo(SwipeIndicator);

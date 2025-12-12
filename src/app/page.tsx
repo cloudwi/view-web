@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Header from "@/components/Header";
 import ViewCard from "@/components/ViewCard";
 import SwipeIndicator from "@/components/SwipeIndicator";
 import SearchFilter from "@/components/SearchFilter";
 import { useViews } from "@/hooks/useViews";
+import { formatRelativeTime } from "@/lib/utils";
 import { SortType } from "@/types/view";
 
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
-  const isInitialMount = useRef(true);
 
   const {
     views,
@@ -25,51 +25,36 @@ export default function Home() {
     currentSort,
   } = useViews("latest");
 
-  // 초기 로드 (한 번만)
+  // 초기 로드 및 정렬 변경 시 새로고침
   useEffect(() => {
     refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [currentSort, refresh]);
 
-  // 정렬 변경 시 새로고침
-  const handleSortChange = (sort: SortType) => {
-    if (sort !== currentSort) {
-      setSort(sort);
-      setCurrentIndex(0);
-    }
-  };
-
-  // 정렬 변경 후 데이터 다시 로드
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSort]);
+  const handleSortChange = useCallback((sort: SortType) => {
+    setSort(sort);
+    setCurrentIndex(0);
+  }, [setSort]);
 
   // 마지막 카드 근처에서 미리 로드
   useEffect(() => {
     if (views.length > 0 && currentIndex >= views.length - 3 && hasNext && !isLoadingMore) {
       loadMore();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentIndex, views.length, hasNext, isLoadingMore]);
+  }, [currentIndex, views.length, hasNext, isLoadingMore, loadMore]);
 
   // 검색 필터 적용 (클라이언트 사이드)
-  const filteredViews = searchQuery.trim()
-    ? views.filter(
-        (view) =>
-          view.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          view.options.some((opt) =>
-            opt.content.toLowerCase().includes(searchQuery.toLowerCase())
-          ) ||
-          view.author.nickname.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : views;
+  const filteredViews = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return views;
+    return views.filter(
+      (view) =>
+        view.title.toLowerCase().includes(query) ||
+        view.options.some((opt) => opt.content.toLowerCase().includes(query)) ||
+        view.author.nickname.toLowerCase().includes(query)
+    );
+  }, [views, searchQuery]);
 
-  const totalCards = filteredViews.length + 1; // +1 for end card
+  const totalCards = filteredViews.length + 1;
 
   // 검색어 변경 시 인덱스 리셋
   useEffect(() => {
@@ -109,7 +94,7 @@ export default function Home() {
       <SwipeIndicator total={totalCards} current={currentIndex} />
 
       {/* Search & Filter */}
-      <div className="fixed top-20 left-0 right-0 z-30 py-4 bg-background/80 backdrop-blur-sm">
+      <div className="fixed top-16 left-0 right-0 z-30 py-3 bg-background/90 backdrop-blur-sm border-b border-card-border/50">
         <SearchFilter
           onSearch={setSearchQuery}
           onSortChange={handleSortChange}
@@ -117,8 +102,8 @@ export default function Home() {
         />
       </div>
 
-      {/* Main Content */}
-      <main className="h-screen pt-44 flex items-center justify-center">
+      {/* Main Content - 헤더(64px) + 검색창(약 56px) + 하단 네비게이션 여백 */}
+      <main className="h-screen pt-36 pb-24 flex items-start justify-center">
         <div className="w-full h-full relative">
           {/* Loading State */}
           {isLoading ? (
@@ -265,25 +250,4 @@ export default function Home() {
       </button>
     </div>
   );
-}
-
-// 상대 시간 포맷
-function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHour = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHour / 24);
-  const diffWeek = Math.floor(diffDay / 7);
-  const diffMonth = Math.floor(diffDay / 30);
-
-  if (diffSec < 60) return "방금 전";
-  if (diffMin < 60) return `${diffMin}분 전`;
-  if (diffHour < 24) return `${diffHour}시간 전`;
-  if (diffDay < 7) return `${diffDay}일 전`;
-  if (diffWeek < 4) return `${diffWeek}주 전`;
-  if (diffMonth < 12) return `${diffMonth}개월 전`;
-  return `${Math.floor(diffMonth / 12)}년 전`;
 }

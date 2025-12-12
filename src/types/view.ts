@@ -9,13 +9,17 @@ export interface ViewAuthor {
   nickname: string;
 }
 
+export interface MyVote {
+  option_id: number;
+}
+
 export interface View {
   id: number;
   title: string;
   author: ViewAuthor;
   options: ViewOption[];
   total_votes: number;
-  my_vote: number | null;
+  my_vote: MyVote | null;
   created_at: string;
   updated_at: string;
   edited: boolean;

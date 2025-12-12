@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo, useCallback } from "react";
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
+function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   // ESC 키로 닫기
@@ -30,13 +30,13 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     if (!isOpen) setIsLoading(false);
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
-  const handleKakaoLogin = () => {
+  const handleKakaoLogin = useCallback(() => {
     setIsLoading(true);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
     window.location.href = `${apiUrl}/auth/kakao`;
-  };
+  }, []);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
@@ -102,3 +102,5 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     </div>
   );
 }
+
+export default memo(LoginModal);
