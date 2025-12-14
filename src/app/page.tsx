@@ -117,9 +117,13 @@ export default function Home() {
           {/* Loading State */}
           {isLoading ? (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
+              <div className="text-center px-4">
                 <div className="mb-4 h-10 w-10 animate-spin rounded-full border-3 border-accent-primary border-t-transparent mx-auto" />
-                <p className="text-text-muted">뷰를 불러오는 중...</p>
+                <p className="text-text-muted mb-2">뷰를 불러오는 중...</p>
+                <p className="text-xs text-text-muted/70">
+                  서버가 절전 모드에서 깨어나는 중일 수 있어요.<br />
+                  최대 1분 정도 소요될 수 있습니다.
+                </p>
               </div>
             </div>
           ) : error ? (
