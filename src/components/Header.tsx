@@ -22,7 +22,7 @@ function Header({ onCreateSuccess }: HeaderProps) {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-card-border">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
           {/* Logo */}
-          <div className="flex items-center">
+          <Link href="/" className="flex items-center">
             <Image
               src="/images/logo.png"
               alt="View"
@@ -31,7 +31,7 @@ function Header({ onCreateSuccess }: HeaderProps) {
               priority
               style={{ width: 'auto', height: 'auto' }}
             />
-          </div>
+          </Link>
 
           {/* Actions */}
           <div className="flex items-center gap-3">

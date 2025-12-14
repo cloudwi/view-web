@@ -25,7 +25,7 @@ function CommentBottomSheet({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasNext, setHasNext] = useState(false);
-  const [cursor, setCursor] = useState<string | null>(null);
+  const [, setCursor] = useState<string | null>(null);
   const [newComment, setNewComment] = useState("");
   const [commentsCount, setCommentsCount] = useState(initialCommentsCount);
   const [error, setError] = useState<string | null>(null);
