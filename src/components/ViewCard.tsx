@@ -2,6 +2,7 @@
 
 import { useState, useEffect, memo } from "react";
 import { voteOnView, cancelVote } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import CommentBottomSheet from "./CommentBottomSheet";
 
 interface Option {
@@ -36,6 +37,8 @@ function ViewCard({
   myVote,
   commentsCount: initialCommentsCount = 0,
 }: ViewCardProps) {
+  const { isAuthenticated, openLoginModal } = useAuth();
+
   // 이미 투표한 경우 초기 상태 설정
   const initialVotedOption = myVote?.option_id
     ? initialOptions.find(opt => opt.id === myVote.option_id.toString())?.id || null
@@ -71,6 +74,12 @@ function ViewCard({
 
   const handleVote = async (optionId: string) => {
     if (hasVoted || isVoting) return;
+
+    // 로그인 상태 확인
+    if (!isAuthenticated) {
+      openLoginModal();
+      return;
+    }
 
     setIsVoting(true);
 
@@ -222,15 +231,13 @@ function ViewCard({
                 }}
               >
                 {/* Progress bar background */}
-                {hasVoted && (
-                  <div
-                    className="absolute inset-0 opacity-20 animate-progress"
-                    style={{
-                      backgroundColor: option.color,
-                      width: `${percentage}%`,
-                    }}
-                  />
-                )}
+                <div
+                  className="absolute inset-0 opacity-20"
+                  style={{
+                    backgroundColor: option.color,
+                    width: `${percentage}%`,
+                  }}
+                />
 
                 <div className="relative z-10 flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -243,25 +250,21 @@ function ViewCard({
                     <span className="font-medium">{option.text}</span>
                   </div>
 
-                  {hasVoted && (
-                    <div className="flex items-center gap-2 animate-fade-in">
-                      <span className="text-lg font-bold">{percentage}%</span>
-                      {isWinner && (
-                        <span className="text-success text-xl">👑</span>
-                      )}
-                      {isSelected && (
-                        <span className="text-accent-primary">✓</span>
-                      )}
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold">{percentage}%</span>
+                    {isWinner && totalVotes > 0 && (
+                      <span className="text-success text-xl">👑</span>
+                    )}
+                    {isSelected && (
+                      <span className="text-accent-primary">✓</span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Vote count */}
-                {hasVoted && (
-                  <div className="relative z-10 mt-2 text-xs text-text-muted animate-slide-in">
-                    {option.votes.toLocaleString()}표
-                  </div>
-                )}
+                <div className="relative z-10 mt-2 text-xs text-text-muted">
+                  {option.votes.toLocaleString()}표
+                </div>
               </button>
             );
           })}

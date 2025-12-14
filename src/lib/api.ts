@@ -1,4 +1,12 @@
 import { ViewsResponse, SortType, CommentsResponse, Comment } from "@/types/view";
+import { AUTH_REQUIRED_EVENT } from "@/contexts/AuthContext";
+
+// 401 에러 발생 시 이벤트 발생
+function handleUnauthorized() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(AUTH_REQUIRED_EVENT));
+  }
+}
 
 interface FetchViewsParams {
   sort?: SortType;
@@ -29,6 +37,9 @@ export async function fetchViews({
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
     throw new Error(`Failed to fetch views: ${response.status}`);
   }
 
@@ -61,6 +72,9 @@ export async function voteOnView({ viewId, viewOptionId }: VoteParams): Promise<
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
     throw new Error(`Failed to vote: ${response.status}`);
   }
 
@@ -77,6 +91,9 @@ export async function cancelVote(viewId: number): Promise<void> {
   });
 
   if (!response.ok && response.status !== 204) {
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
     throw new Error(`Failed to cancel vote: ${response.status}`);
   }
 }
@@ -105,6 +122,9 @@ export async function createView({ title, options }: CreateViewParams): Promise<
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.error || `뷰 생성 실패: ${response.status}`);
   }
@@ -140,6 +160,9 @@ export async function fetchComments({
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
     throw new Error(`댓글 조회 실패: ${response.status}`);
   }
 
@@ -167,6 +190,9 @@ export async function createComment({ viewId, content }: CreateCommentParams): P
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.error || `댓글 작성 실패: ${response.status}`);
   }

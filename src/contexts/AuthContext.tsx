@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import LoginModal from "@/components/LoginModal";
 
 interface User {
   id: number;
@@ -12,13 +13,22 @@ interface AuthContextType {
   isAuthenticated: boolean;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  openLoginModal: () => void;
+  closeLoginModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// 401 에러 이벤트 이름
+export const AUTH_REQUIRED_EVENT = "auth:required";
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  const openLoginModal = useCallback(() => setIsLoginModalOpen(true), []);
+  const closeLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
 
   // 토큰 유효성 확인 (쿠키 기반)
   const checkAuth = useCallback(async () => {
@@ -42,6 +52,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, [checkAuth]);
 
+  // 401 이벤트 리스닝
+  useEffect(() => {
+    const handleAuthRequired = () => {
+      openLoginModal();
+    };
+
+    window.addEventListener(AUTH_REQUIRED_EVENT, handleAuthRequired);
+    return () => {
+      window.removeEventListener(AUTH_REQUIRED_EVENT, handleAuthRequired);
+    };
+  }, [openLoginModal]);
+
   const logout = useCallback(async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
@@ -55,9 +77,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         logout,
         checkAuth,
+        openLoginModal,
+        closeLoginModal,
       }}
     >
       {children}
+      <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />
     </AuthContext.Provider>
   );
 }
