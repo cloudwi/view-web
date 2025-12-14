@@ -12,12 +12,14 @@ interface FetchViewsParams {
   sort?: SortType;
   per_page?: number;
   cursor?: string | null;
+  author?: "me" | null;
 }
 
 export async function fetchViews({
   sort = "latest",
   per_page = 20,
   cursor = null,
+  author = null,
 }: FetchViewsParams = {}): Promise<ViewsResponse> {
   const params = new URLSearchParams({
     sort,
@@ -26,6 +28,10 @@ export async function fetchViews({
 
   if (cursor) {
     params.append("cursor", cursor);
+  }
+
+  if (author) {
+    params.append("author", author);
   }
 
   // Next.js API Route를 통해 요청 (토큰 자동 포함)
@@ -198,4 +204,62 @@ export async function createComment({ viewId, content }: CreateCommentParams): P
   }
 
   return response.json();
+}
+
+// 뷰 수정 API
+interface UpdateViewOption {
+  id?: number;
+  content: string;
+  _destroy?: boolean;
+}
+
+interface UpdateViewParams {
+  viewId: number;
+  title: string;
+  options?: UpdateViewOption[];
+}
+
+export async function updateView({ viewId, title, options }: UpdateViewParams): Promise<void> {
+  const body: { view: { title: string; view_options_attributes?: UpdateViewOption[] } } = {
+    view: { title: title.trim() },
+  };
+
+  if (options) {
+    body.view.view_options_attributes = options;
+  }
+
+  const response = await fetch(`/api/views/${viewId}`, {
+    method: "PATCH",
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `뷰 수정 실패: ${response.status}`);
+  }
+}
+
+// 뷰 삭제 API
+export async function deleteView(viewId: number): Promise<void> {
+  const response = await fetch(`/api/views/${viewId}`, {
+    method: "DELETE",
+    headers: {
+      "Accept": "application/json",
+    },
+  });
+
+  if (!response.ok && response.status !== 204) {
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `뷰 삭제 실패: ${response.status}`);
+  }
 }

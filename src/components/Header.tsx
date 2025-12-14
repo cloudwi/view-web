@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState, memo } from "react";
 import LoginModal from "./LoginModal";
 import CreateViewModal from "./CreateViewModal";
@@ -54,9 +55,12 @@ function Header({ onCreateSuccess }: HeaderProps) {
                   {/* 드롭다운 메뉴 */}
                   <div className="absolute right-0 top-full mt-2 w-40 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                     <div className="bg-card-bg border border-card-border rounded-xl shadow-lg py-2">
-                      <button className="w-full px-4 py-2 text-left text-sm text-text-muted hover:text-foreground hover:bg-card-border/50 transition-colors">
+                      <Link
+                        href="/mypage"
+                        className="block w-full px-4 py-2 text-left text-sm text-text-muted hover:text-foreground hover:bg-card-border/50 transition-colors"
+                      >
                         마이페이지
-                      </button>
+                      </Link>
                       <button
                         onClick={logout}
                         className="w-full px-4 py-2 text-left text-sm text-text-muted hover:text-foreground hover:bg-card-border/50 transition-colors"
@@ -122,9 +126,13 @@ function Header({ onCreateSuccess }: HeaderProps) {
                   >
                     + 뷰 만들기
                   </button>
-                  <button className="rounded-lg px-4 py-2 text-left text-sm text-text-muted transition-colors hover:bg-card-bg hover:text-accent-primary">
+                  <Link
+                    href="/mypage"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block rounded-lg px-4 py-2 text-left text-sm text-text-muted transition-colors hover:bg-card-bg hover:text-accent-primary"
+                  >
                     마이페이지
-                  </button>
+                  </Link>
                   <button
                     onClick={() => {
                       setIsMenuOpen(false);

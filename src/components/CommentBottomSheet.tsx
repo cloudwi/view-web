@@ -33,47 +33,66 @@ function CommentBottomSheet({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // 댓글 로드
-  const loadComments = useCallback(async (isInitial = false) => {
-    if (isInitial) {
-      setIsLoading(true);
-      setCursor(null);
-    } else {
-      setIsLoadingMore(true);
-    }
+  const cursorRef = useRef<string | null>(null);
+
+  // 초기 댓글 로드
+  const loadInitialComments = useCallback(async () => {
+    setIsLoading(true);
+    setCursor(null);
+    cursorRef.current = null;
     setError(null);
 
     try {
       const response = await fetchComments({
         viewId,
-        cursor: isInitial ? null : cursor,
+        cursor: null,
       });
 
-      if (isInitial) {
-        setComments(response.data);
-      } else {
-        setComments((prev) => [...prev, ...response.data]);
-      }
+      setComments(response.data);
       setHasNext(response.meta.has_next);
       setCursor(response.meta.next_cursor);
+      cursorRef.current = response.meta.next_cursor;
     } catch (err) {
       setError(err instanceof Error ? err.message : "댓글을 불러오는데 실패했습니다.");
     } finally {
       setIsLoading(false);
+    }
+  }, [viewId]);
+
+  // 추가 댓글 로드
+  const loadMoreComments = useCallback(async () => {
+    if (!cursorRef.current) return;
+
+    setIsLoadingMore(true);
+    setError(null);
+
+    try {
+      const response = await fetchComments({
+        viewId,
+        cursor: cursorRef.current,
+      });
+
+      setComments((prev) => [...prev, ...response.data]);
+      setHasNext(response.meta.has_next);
+      setCursor(response.meta.next_cursor);
+      cursorRef.current = response.meta.next_cursor;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "댓글을 불러오는데 실패했습니다.");
+    } finally {
       setIsLoadingMore(false);
     }
-  }, [viewId, cursor]);
+  }, [viewId]);
 
   // 열릴 때 댓글 로드
   useEffect(() => {
     if (isOpen) {
-      loadComments(true);
+      loadInitialComments();
       document.body.style.overflow = "hidden";
     }
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [isOpen, loadComments]);
+  }, [isOpen, loadInitialComments]);
 
   // ESC 키로 닫기
   useEffect(() => {
@@ -92,9 +111,9 @@ function CommentBottomSheet({
 
     const { scrollTop, scrollHeight, clientHeight } = listRef.current;
     if (scrollHeight - scrollTop - clientHeight < 100) {
-      loadComments(false);
+      loadMoreComments();
     }
-  }, [isLoadingMore, hasNext, loadComments]);
+  }, [isLoadingMore, hasNext, loadMoreComments]);
 
   // 댓글 작성
   const handleSubmit = async (e: React.FormEvent) => {
@@ -169,7 +188,7 @@ function CommentBottomSheet({
             <div className="text-center py-12">
               <p className="text-text-muted mb-4">{error}</p>
               <button
-                onClick={() => loadComments(true)}
+                onClick={loadInitialComments}
                 className="text-accent-primary hover:underline"
               >
                 다시 시도

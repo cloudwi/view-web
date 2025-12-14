@@ -12,10 +12,12 @@ export async function GET(request: NextRequest) {
   const sort = searchParams.get("sort");
   const perPage = searchParams.get("per_page");
   const cursor = searchParams.get("cursor");
+  const author = searchParams.get("author");
 
   if (sort) params.append("sort", sort);
   if (perPage) params.append("per_page", perPage);
   if (cursor) params.append("cursor", cursor);
+  if (author) params.append("author", author);
 
   try {
     const headers: HeadersInit = {
