@@ -25,20 +25,16 @@ function CommentBottomSheet({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasNext, setHasNext] = useState(false);
-  const [, setCursor] = useState<string | null>(null);
   const [newComment, setNewComment] = useState("");
   const [commentsCount, setCommentsCount] = useState(initialCommentsCount);
   const [error, setError] = useState<string | null>(null);
 
-  const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
-
   const cursorRef = useRef<string | null>(null);
 
   // 초기 댓글 로드
   const loadInitialComments = useCallback(async () => {
     setIsLoading(true);
-    setCursor(null);
     cursorRef.current = null;
     setError(null);
 
@@ -50,7 +46,6 @@ function CommentBottomSheet({
 
       setComments(response.data);
       setHasNext(response.meta.has_next);
-      setCursor(response.meta.next_cursor);
       cursorRef.current = response.meta.next_cursor;
     } catch (err) {
       setError(err instanceof Error ? err.message : "댓글을 불러오는데 실패했습니다.");
@@ -74,7 +69,6 @@ function CommentBottomSheet({
 
       setComments((prev) => [...prev, ...response.data]);
       setHasNext(response.meta.has_next);
-      setCursor(response.meta.next_cursor);
       cursorRef.current = response.meta.next_cursor;
     } catch (err) {
       setError(err instanceof Error ? err.message : "댓글을 불러오는데 실패했습니다.");
@@ -241,7 +235,6 @@ function CommentBottomSheet({
         >
           <div className="flex items-center gap-3">
             <input
-              ref={inputRef}
               type="text"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}

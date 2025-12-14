@@ -2,6 +2,7 @@
 
 import { useState, useEffect, memo, useCallback } from "react";
 import { createView } from "@/lib/api";
+import { getOptionColor } from "@/lib/constants";
 
 interface CreateViewModalProps {
   isOpen: boolean;
@@ -163,7 +164,7 @@ function CreateViewModal({ isOpen, onClose, onSuccess }: CreateViewModalProps) {
                       <span
                         className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold flex-shrink-0"
                         style={{
-                          backgroundColor: index === 0 ? "#6366F1" : index === 1 ? "#71717A" : "#818CF8",
+                          backgroundColor: getOptionColor(index),
                         }}
                       >
                         {String.fromCharCode(65 + index)}

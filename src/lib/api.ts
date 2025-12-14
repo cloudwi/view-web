@@ -8,6 +8,27 @@ function handleUnauthorized() {
   }
 }
 
+// API 응답 처리 헬퍼 (401 에러 중앙화)
+async function handleResponse<T>(
+  response: Response,
+  errorMessage: string,
+  allowNoContent = false
+): Promise<T> {
+  if (!response.ok && !(allowNoContent && response.status === 204)) {
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || errorData.message || `${errorMessage}: ${response.status}`);
+  }
+
+  if (allowNoContent && response.status === 204) {
+    return undefined as T;
+  }
+
+  return response.json();
+}
+
 interface FetchViewsParams {
   sort?: SortType;
   per_page?: number;
@@ -42,14 +63,7 @@ export async function fetchViews({
     },
   });
 
-  if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    throw new Error(`Failed to fetch views: ${response.status}`);
-  }
-
-  return response.json();
+  return handleResponse<ViewsResponse>(response, "뷰 목록 조회 실패");
 }
 
 // 투표 API (Next.js API Route를 통해 프록시)
@@ -77,14 +91,7 @@ export async function voteOnView({ viewId, viewOptionId }: VoteParams): Promise<
     body: JSON.stringify({ view_option_id: viewOptionId }),
   });
 
-  if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    throw new Error(`Failed to vote: ${response.status}`);
-  }
-
-  return response.json();
+  return handleResponse<VoteResponse>(response, "투표 실패");
 }
 
 // 투표 취소 API
@@ -96,12 +103,7 @@ export async function cancelVote(viewId: number): Promise<void> {
     },
   });
 
-  if (!response.ok && response.status !== 204) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    throw new Error(`Failed to cancel vote: ${response.status}`);
-  }
+  return handleResponse<void>(response, "투표 취소 실패", true);
 }
 
 // 뷰 생성 API
@@ -127,15 +129,7 @@ export async function createView({ title, options }: CreateViewParams): Promise<
     body: JSON.stringify({ title, options }),
   });
 
-  if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `뷰 생성 실패: ${response.status}`);
-  }
-
-  return response.json();
+  return handleResponse<CreateViewResponse>(response, "뷰 생성 실패");
 }
 
 // 댓글 조회 API
@@ -165,14 +159,7 @@ export async function fetchComments({
     },
   });
 
-  if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    throw new Error(`댓글 조회 실패: ${response.status}`);
-  }
-
-  return response.json();
+  return handleResponse<CommentsResponse>(response, "댓글 조회 실패");
 }
 
 // 댓글 작성 API
@@ -195,15 +182,7 @@ export async function createComment({ viewId, content }: CreateCommentParams): P
     body: JSON.stringify({ content }),
   });
 
-  if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `댓글 작성 실패: ${response.status}`);
-  }
-
-  return response.json();
+  return handleResponse<CreateCommentResponse>(response, "댓글 작성 실패");
 }
 
 // 뷰 수정 API
@@ -237,13 +216,7 @@ export async function updateView({ viewId, title, options }: UpdateViewParams): 
     body: JSON.stringify(body),
   });
 
-  if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `뷰 수정 실패: ${response.status}`);
-  }
+  return handleResponse<void>(response, "뷰 수정 실패", true);
 }
 
 // 뷰 삭제 API
@@ -255,11 +228,5 @@ export async function deleteView(viewId: number): Promise<void> {
     },
   });
 
-  if (!response.ok && response.status !== 204) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `뷰 삭제 실패: ${response.status}`);
-  }
+  return handleResponse<void>(response, "뷰 삭제 실패", true);
 }

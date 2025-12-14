@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { View, SortType } from "@/types/view";
 import { fetchViews } from "@/lib/api";
 
@@ -22,50 +22,54 @@ export function useViews(initialSort: SortType = "latest"): UseViewsReturn {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasNext, setHasNext] = useState(false);
-  const [cursor, setCursor] = useState<string | null>(null);
   const [currentSort, setCurrentSort] = useState<SortType>(initialSort);
+
+  const cursorRef = useRef<string | null>(null);
+  const sortRef = useRef<SortType>(initialSort);
+  sortRef.current = currentSort;
 
   // 초기 로드 또는 새로고침
   const refresh = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+    cursorRef.current = null;
     try {
-      const response = await fetchViews({ sort: currentSort, cursor: null });
+      const response = await fetchViews({ sort: sortRef.current, cursor: null });
       setViews(response.data);
       setHasNext(response.meta.has_next);
-      setCursor(response.meta.next_cursor);
+      cursorRef.current = response.meta.next_cursor;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load views");
+      setError(err instanceof Error ? err.message : "뷰를 불러오는데 실패했습니다.");
     } finally {
       setIsLoading(false);
     }
-  }, [currentSort]);
+  }, []);
 
   // 더 불러오기
   const loadMore = useCallback(async () => {
-    if (isLoadingMore || !hasNext || !cursor) return;
+    if (!cursorRef.current) return;
 
     setIsLoadingMore(true);
     try {
-      const response = await fetchViews({ sort: currentSort, cursor });
+      const response = await fetchViews({ sort: sortRef.current, cursor: cursorRef.current });
       setViews((prev) => [...prev, ...response.data]);
       setHasNext(response.meta.has_next);
-      setCursor(response.meta.next_cursor);
+      cursorRef.current = response.meta.next_cursor;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load more views");
+      setError(err instanceof Error ? err.message : "뷰를 더 불러오는데 실패했습니다.");
     } finally {
       setIsLoadingMore(false);
     }
-  }, [currentSort, cursor, hasNext, isLoadingMore]);
+  }, []);
 
   // 정렬 변경
   const setSort = useCallback((sort: SortType) => {
-    if (sort !== currentSort) {
+    if (sort !== sortRef.current) {
       setCurrentSort(sort);
       setViews([]);
-      setCursor(null);
+      cursorRef.current = null;
     }
-  }, [currentSort]);
+  }, []);
 
   return {
     views,

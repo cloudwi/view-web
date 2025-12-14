@@ -8,6 +8,7 @@ import SearchFilter from "@/components/SearchFilter";
 import CreateViewModal from "@/components/CreateViewModal";
 import { useViews } from "@/hooks/useViews";
 import { formatRelativeTime } from "@/lib/utils";
+import { getOptionColor } from "@/lib/constants";
 import { SortType } from "@/types/view";
 
 export default function Home() {
@@ -96,6 +97,26 @@ export default function Home() {
 
   const currentView = filteredViews[currentIndex];
   const isEndCard = currentIndex === filteredViews.length;
+
+  // ViewCard props 메모이제이션 (불필요한 리렌더링 방지)
+  const currentViewProps = useMemo(() => {
+    if (!currentView) return null;
+    return {
+      id: currentView.id,
+      question: currentView.title,
+      options: currentView.options.map((opt, idx) => ({
+        id: opt.id.toString(),
+        text: opt.content,
+        votes: opt.votes_count,
+        color: getOptionColor(idx),
+      })),
+      totalVotes: currentView.total_votes,
+      author: currentView.author.nickname,
+      createdAt: formatRelativeTime(currentView.created_at),
+      myVote: currentView.my_vote,
+      commentsCount: currentView.comments_count,
+    };
+  }, [currentView]);
 
   return (
     <div className="relative min-h-screen bg-background overflow-hidden">
@@ -187,22 +208,8 @@ export default function Home() {
                     </>
                   )}
                 </div>
-              ) : currentView ? (
-                <ViewCard
-                  id={currentView.id}
-                  question={currentView.title}
-                  options={currentView.options.map((opt, idx) => ({
-                    id: opt.id.toString(),
-                    text: opt.content,
-                    votes: opt.votes_count,
-                    color: idx === 0 ? "#6366F1" : idx === 1 ? "#71717A" : "#818CF8",
-                  }))}
-                  totalVotes={currentView.total_votes}
-                  author={currentView.author.nickname}
-                  createdAt={formatRelativeTime(currentView.created_at)}
-                  myVote={currentView.my_vote}
-                  commentsCount={currentView.comments_count}
-                />
+              ) : currentViewProps ? (
+                <ViewCard {...currentViewProps} />
               ) : null}
             </div>
           )}

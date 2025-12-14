@@ -16,8 +16,8 @@ export default function MyPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasNext, setHasNext] = useState(false);
-  const [cursor, setCursor] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const cursorRef = useRef<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   // 메뉴 상태
@@ -39,7 +39,7 @@ export default function MyPage() {
   const loadMyViews = useCallback(async (isInitial = true) => {
     if (isInitial) {
       setIsLoading(true);
-      setCursor(null);
+      cursorRef.current = null;
     } else {
       setIsLoadingMore(true);
     }
@@ -49,7 +49,7 @@ export default function MyPage() {
       const response = await fetchViews({
         author: "me",
         sort: "latest",
-        cursor: isInitial ? null : cursor,
+        cursor: isInitial ? null : cursorRef.current,
       });
 
       if (isInitial) {
@@ -58,14 +58,14 @@ export default function MyPage() {
         setViews((prev) => [...prev, ...response.data]);
       }
       setHasNext(response.meta.has_next);
-      setCursor(response.meta.next_cursor);
+      cursorRef.current = response.meta.next_cursor;
     } catch (err) {
       setError(err instanceof Error ? err.message : "뷰를 불러오는데 실패했습니다.");
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
     }
-  }, [cursor]);
+  }, []);
 
   // 인증 확인 후 데이터 로드
   useEffect(() => {
@@ -77,7 +77,7 @@ export default function MyPage() {
     }
 
     loadMyViews(true);
-  }, [authLoading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, router, loadMyViews]);
 
   // 메뉴 외부 클릭 시 닫기
   useEffect(() => {
