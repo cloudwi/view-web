@@ -16,8 +16,8 @@ interface UseViewsReturn {
   currentSort: SortType;
   setVoteFilter: (filter: VoteFilterType) => void;
   currentVoteFilter: VoteFilterType;
-  setCategory: (category: number | null) => void;
-  currentCategory: number | null;
+  setCategory: (category: string | null) => void;
+  currentCategory: string | null;
   updateViewVote: (viewId: number, optionId: number) => void;
   cancelViewVote: (viewId: number) => void;
 }
@@ -30,12 +30,12 @@ export function useViews(initialSort: SortType = "latest"): UseViewsReturn {
   const [hasNext, setHasNext] = useState(false);
   const [currentSort, setCurrentSort] = useState<SortType>(initialSort);
   const [currentVoteFilter, setCurrentVoteFilter] = useState<VoteFilterType>("all");
-  const [currentCategory, setCurrentCategory] = useState<number | null>(null);
+  const [currentCategory, setCurrentCategory] = useState<string | null>(null);
 
   const cursorRef = useRef<string | null>(null);
   const sortRef = useRef<SortType>(initialSort);
   const voteFilterRef = useRef<VoteFilterType>("all");
-  const categoryRef = useRef<number | null>(null);
+  const categoryRef = useRef<string | null>(null);
   sortRef.current = currentSort;
   voteFilterRef.current = currentVoteFilter;
   categoryRef.current = currentCategory;
@@ -103,7 +103,7 @@ export function useViews(initialSort: SortType = "latest"): UseViewsReturn {
   }, []);
 
   // 카테고리 변경
-  const setCategory = useCallback((category: number | null) => {
+  const setCategory = useCallback((category: string | null) => {
     if (category !== categoryRef.current) {
       setCurrentCategory(category);
       setViews([]);

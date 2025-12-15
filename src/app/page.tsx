@@ -53,8 +53,8 @@ export default function Home() {
     setCurrentIndex(0);
   }, [setVoteFilter]);
 
-  const handleCategoryChange = useCallback((categoryId: number | null) => {
-    setCategory(categoryId);
+  const handleCategoryChange = useCallback((categorySlug: string | null) => {
+    setCategory(categorySlug);
     setCurrentIndex(0);
   }, [setCategory]);
 

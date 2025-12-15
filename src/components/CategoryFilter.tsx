@@ -5,8 +5,8 @@ import { Category } from "@/types/view";
 import { fetchCategories } from "@/lib/api";
 
 interface CategoryFilterProps {
-  selectedCategory: number | null;
-  onCategoryChange: (categoryId: number | null) => void;
+  selectedCategory: string | null;
+  onCategoryChange: (categorySlug: string | null) => void;
 }
 
 export default function CategoryFilter({
@@ -69,10 +69,10 @@ export default function CategoryFilter({
       {/* 카테고리 칩들 */}
       {categories.map((category) => (
         <button
-          key={category.id}
-          onClick={() => onCategoryChange(category.id)}
+          key={category.slug}
+          onClick={() => onCategoryChange(category.slug)}
           className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
-            selectedCategory === category.id
+            selectedCategory === category.slug
               ? "bg-accent-primary text-white shadow-md"
               : "bg-card-bg border border-card-border text-text-secondary hover:bg-card-border"
           }`}

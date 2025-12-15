@@ -35,7 +35,7 @@ interface FetchViewsParams {
   cursor?: string | null;
   author?: "me" | null;
   vote_filter?: VoteFilterType;
-  category?: number | null;
+  category?: string | null;
 }
 
 export async function fetchViews({
@@ -64,7 +64,7 @@ export async function fetchViews({
   }
 
   if (category) {
-    params.append("category", category.toString());
+    params.append("category", category);
   }
 
   // Next.js API Route를 통해 요청 (토큰 자동 포함)
