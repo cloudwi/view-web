@@ -7,14 +7,17 @@ import SwipeIndicator from "@/components/SwipeIndicator";
 import SearchFilter from "@/components/SearchFilter";
 import CreateViewModal from "@/components/CreateViewModal";
 import { useViews } from "@/hooks/useViews";
+import { useAuth } from "@/contexts/AuthContext";
 import { formatRelativeTime } from "@/lib/utils";
 import { getOptionColor } from "@/lib/constants";
-import { SortType } from "@/types/view";
+import { SortType, VoteFilterType } from "@/types/view";
 
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const { isAuthenticated } = useAuth();
 
   const {
     views,
@@ -26,17 +29,26 @@ export default function Home() {
     refresh,
     setSort,
     currentSort,
+    setVoteFilter,
+    currentVoteFilter,
+    updateViewVote,
+    cancelViewVote,
   } = useViews("latest");
 
-  // 초기 로드 및 정렬 변경 시 새로고침
+  // 초기 로드 및 정렬/필터 변경 시 새로고침
   useEffect(() => {
     refresh();
-  }, [currentSort, refresh]);
+  }, [currentSort, currentVoteFilter, refresh]);
 
   const handleSortChange = useCallback((sort: SortType) => {
     setSort(sort);
     setCurrentIndex(0);
   }, [setSort]);
+
+  const handleVoteFilterChange = useCallback((filter: VoteFilterType) => {
+    setVoteFilter(filter);
+    setCurrentIndex(0);
+  }, [setVoteFilter]);
 
   // 뷰 생성 성공 시 새로고침 및 첫 번째 카드로 이동
   const handleCreateSuccess = useCallback(() => {
@@ -115,8 +127,10 @@ export default function Home() {
       createdAt: formatRelativeTime(currentView.created_at),
       myVote: currentView.my_vote,
       commentsCount: currentView.comments_count,
+      onVoteUpdate: updateViewVote,
+      onVoteCancel: cancelViewVote,
     };
-  }, [currentView]);
+  }, [currentView, updateViewVote, cancelViewVote]);
 
   return (
     <div className="relative min-h-screen bg-background overflow-hidden">
@@ -129,6 +143,9 @@ export default function Home() {
           onSearch={handleSearch}
           onSortChange={handleSortChange}
           currentSort={currentSort}
+          onVoteFilterChange={handleVoteFilterChange}
+          currentVoteFilter={currentVoteFilter}
+          isLoggedIn={isAuthenticated}
         />
       </div>
 

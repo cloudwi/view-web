@@ -13,11 +13,13 @@ export async function GET(request: NextRequest) {
   const perPage = searchParams.get("per_page");
   const cursor = searchParams.get("cursor");
   const author = searchParams.get("author");
+  const voteFilter = searchParams.get("vote_filter");
 
   if (sort) params.append("sort", sort);
   if (perPage) params.append("per_page", perPage);
   if (cursor) params.append("cursor", cursor);
   if (author) params.append("author", author);
+  if (voteFilter) params.append("vote_filter", voteFilter);
 
   try {
     const headers: HeadersInit = {

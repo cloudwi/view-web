@@ -25,6 +25,8 @@ interface ViewCardProps {
   createdAt?: string;
   myVote?: MyVote | null;
   commentsCount?: number;
+  onVoteUpdate?: (viewId: number, optionId: number) => void;
+  onVoteCancel?: (viewId: number) => void;
 }
 
 function ViewCard({
@@ -36,6 +38,8 @@ function ViewCard({
   createdAt,
   myVote,
   commentsCount: initialCommentsCount = 0,
+  onVoteUpdate,
+  onVoteCancel,
 }: ViewCardProps) {
   const { isAuthenticated, openLoginModal } = useAuth();
 
@@ -98,6 +102,7 @@ function ViewCard({
         viewId: id,
         viewOptionId: parseInt(optionId, 10),
       });
+      onVoteUpdate?.(id, parseInt(optionId, 10));
       setTimeout(() => setShowFeedback(true), 500);
     } catch (error) {
       // Rollback on error
@@ -134,6 +139,7 @@ function ViewCard({
 
     try {
       await cancelVote(id);
+      onVoteCancel?.(id);
     } catch (error) {
       // Rollback on error
       setOptions((prev) =>

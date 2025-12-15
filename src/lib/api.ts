@@ -1,4 +1,4 @@
-import { ViewsResponse, SortType, CommentsResponse, Comment } from "@/types/view";
+import { ViewsResponse, SortType, VoteFilterType, CommentsResponse, Comment } from "@/types/view";
 import { AUTH_REQUIRED_EVENT } from "@/contexts/AuthContext";
 
 // 401 에러 발생 시 이벤트 발생
@@ -34,6 +34,7 @@ interface FetchViewsParams {
   per_page?: number;
   cursor?: string | null;
   author?: "me" | null;
+  vote_filter?: VoteFilterType;
 }
 
 export async function fetchViews({
@@ -41,6 +42,7 @@ export async function fetchViews({
   per_page = 20,
   cursor = null,
   author = null,
+  vote_filter = "all",
 }: FetchViewsParams = {}): Promise<ViewsResponse> {
   const params = new URLSearchParams({
     sort,
@@ -53,6 +55,10 @@ export async function fetchViews({
 
   if (author) {
     params.append("author", author);
+  }
+
+  if (vote_filter !== "all") {
+    params.append("vote_filter", vote_filter);
   }
 
   // Next.js API Route를 통해 요청 (토큰 자동 포함)

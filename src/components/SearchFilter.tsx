@@ -1,18 +1,24 @@
 "use client";
 
 import { useState, useEffect, useRef, memo } from "react";
-import { SortType } from "@/types/view";
+import { SortType, VoteFilterType } from "@/types/view";
 
 interface SearchFilterProps {
   onSearch: (query: string) => void;
   onSortChange: (sort: SortType) => void;
   currentSort: SortType;
+  onVoteFilterChange?: (filter: VoteFilterType) => void;
+  currentVoteFilter?: VoteFilterType;
+  isLoggedIn?: boolean;
 }
 
 function SearchFilter({
   onSearch,
   onSortChange,
   currentSort,
+  onVoteFilterChange,
+  currentVoteFilter = "all",
+  isLoggedIn = false,
 }: SearchFilterProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -103,6 +109,42 @@ function SearchFilter({
             인기
           </button>
         </div>
+
+        {/* 투표 필터 (로그인 시에만 표시) */}
+        {isLoggedIn && onVoteFilterChange && (
+          <div className="flex gap-1.5 flex-shrink-0 border-l border-card-border pl-3">
+            <button
+              onClick={() => onVoteFilterChange("all")}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                currentVoteFilter === "all"
+                  ? "bg-accent-primary text-white"
+                  : "bg-card-bg text-text-muted hover:text-foreground border border-card-border"
+              }`}
+            >
+              전체
+            </button>
+            <button
+              onClick={() => onVoteFilterChange("voted")}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                currentVoteFilter === "voted"
+                  ? "bg-accent-primary text-white"
+                  : "bg-card-bg text-text-muted hover:text-foreground border border-card-border"
+              }`}
+            >
+              투표함
+            </button>
+            <button
+              onClick={() => onVoteFilterChange("not_voted")}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                currentVoteFilter === "not_voted"
+                  ? "bg-accent-primary text-white"
+                  : "bg-card-bg text-text-muted hover:text-foreground border border-card-border"
+              }`}
+            >
+              미투표
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

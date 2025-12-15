@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { View, SortType } from "@/types/view";
+import { View, SortType, VoteFilterType } from "@/types/view";
 import { fetchViews } from "@/lib/api";
 
 interface UseViewsReturn {
@@ -14,6 +14,10 @@ interface UseViewsReturn {
   refresh: () => Promise<void>;
   setSort: (sort: SortType) => void;
   currentSort: SortType;
+  setVoteFilter: (filter: VoteFilterType) => void;
+  currentVoteFilter: VoteFilterType;
+  updateViewVote: (viewId: number, optionId: number) => void;
+  cancelViewVote: (viewId: number) => void;
 }
 
 export function useViews(initialSort: SortType = "latest"): UseViewsReturn {
@@ -23,10 +27,13 @@ export function useViews(initialSort: SortType = "latest"): UseViewsReturn {
   const [error, setError] = useState<string | null>(null);
   const [hasNext, setHasNext] = useState(false);
   const [currentSort, setCurrentSort] = useState<SortType>(initialSort);
+  const [currentVoteFilter, setCurrentVoteFilter] = useState<VoteFilterType>("all");
 
   const cursorRef = useRef<string | null>(null);
   const sortRef = useRef<SortType>(initialSort);
+  const voteFilterRef = useRef<VoteFilterType>("all");
   sortRef.current = currentSort;
+  voteFilterRef.current = currentVoteFilter;
 
   // 초기 로드 또는 새로고침
   const refresh = useCallback(async () => {
@@ -34,7 +41,7 @@ export function useViews(initialSort: SortType = "latest"): UseViewsReturn {
     setError(null);
     cursorRef.current = null;
     try {
-      const response = await fetchViews({ sort: sortRef.current, cursor: null });
+      const response = await fetchViews({ sort: sortRef.current, cursor: null, vote_filter: voteFilterRef.current });
       setViews(response.data);
       setHasNext(response.meta.has_next);
       cursorRef.current = response.meta.next_cursor;
@@ -51,7 +58,7 @@ export function useViews(initialSort: SortType = "latest"): UseViewsReturn {
 
     setIsLoadingMore(true);
     try {
-      const response = await fetchViews({ sort: sortRef.current, cursor: cursorRef.current });
+      const response = await fetchViews({ sort: sortRef.current, cursor: cursorRef.current, vote_filter: voteFilterRef.current });
       setViews((prev) => [...prev, ...response.data]);
       setHasNext(response.meta.has_next);
       cursorRef.current = response.meta.next_cursor;
@@ -71,6 +78,54 @@ export function useViews(initialSort: SortType = "latest"): UseViewsReturn {
     }
   }, []);
 
+  // 투표 필터 변경
+  const setVoteFilter = useCallback((filter: VoteFilterType) => {
+    if (filter !== voteFilterRef.current) {
+      setCurrentVoteFilter(filter);
+      setViews([]);
+      cursorRef.current = null;
+    }
+  }, []);
+
+  // 투표 상태 업데이트
+  const updateViewVote = useCallback((viewId: number, optionId: number) => {
+    setViews((prev) =>
+      prev.map((view) => {
+        if (view.id !== viewId) return view;
+        return {
+          ...view,
+          my_vote: { option_id: optionId },
+          total_votes: view.total_votes + 1,
+          options: view.options.map((opt) =>
+            opt.id === optionId
+              ? { ...opt, votes_count: opt.votes_count + 1 }
+              : opt
+          ),
+        };
+      })
+    );
+  }, []);
+
+  // 투표 취소 상태 업데이트
+  const cancelViewVote = useCallback((viewId: number) => {
+    setViews((prev) =>
+      prev.map((view) => {
+        if (view.id !== viewId) return view;
+        const previousOptionId = view.my_vote?.option_id;
+        return {
+          ...view,
+          my_vote: null,
+          total_votes: view.total_votes - 1,
+          options: view.options.map((opt) =>
+            opt.id === previousOptionId
+              ? { ...opt, votes_count: opt.votes_count - 1 }
+              : opt
+          ),
+        };
+      })
+    );
+  }, []);
+
   return {
     views,
     isLoading,
@@ -81,5 +136,9 @@ export function useViews(initialSort: SortType = "latest"): UseViewsReturn {
     refresh,
     setSort,
     currentSort,
+    setVoteFilter,
+    currentVoteFilter,
+    updateViewVote,
+    cancelViewVote,
   };
 }

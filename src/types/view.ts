@@ -38,6 +38,7 @@ export interface ViewsResponse {
 }
 
 export type SortType = "latest" | "popular";
+export type VoteFilterType = "all" | "voted" | "not_voted";
 
 // 댓글 관련 타입
 export interface CommentAuthor {
