@@ -47,7 +47,7 @@ function SearchFilter({
 
   return (
     <div className="w-full max-w-2xl mx-auto px-4">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
         {/* 검색바 */}
         <form onSubmit={handleSearch} className="relative flex-1">
           <input
@@ -86,65 +86,68 @@ function SearchFilter({
           )}
         </form>
 
-        {/* 정렬 탭 */}
-        <div className="flex gap-1.5 flex-shrink-0">
-          <button
-            onClick={() => onSortChange("latest")}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              currentSort === "latest"
-                ? "bg-accent-primary text-white"
-                : "bg-card-bg text-text-muted hover:text-foreground border border-card-border"
-            }`}
-          >
-            최신
-          </button>
-          <button
-            onClick={() => onSortChange("popular")}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              currentSort === "popular"
-                ? "bg-accent-primary text-white"
-                : "bg-card-bg text-text-muted hover:text-foreground border border-card-border"
-            }`}
-          >
-            인기
-          </button>
-        </div>
-
-        {/* 투표 필터 (로그인 시에만 표시) */}
-        {isLoggedIn && onVoteFilterChange && (
-          <div className="flex gap-1.5 flex-shrink-0 border-l border-card-border pl-3">
+        {/* 필터 영역 */}
+        <div className="flex items-center gap-3 justify-center sm:justify-start">
+          {/* 정렬 탭 */}
+          <div className="flex gap-1.5 flex-shrink-0">
             <button
-              onClick={() => onVoteFilterChange("all")}
+              onClick={() => onSortChange("latest")}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                currentVoteFilter === "all"
+                currentSort === "latest"
                   ? "bg-accent-primary text-white"
                   : "bg-card-bg text-text-muted hover:text-foreground border border-card-border"
               }`}
             >
-              전체
+              최신
             </button>
             <button
-              onClick={() => onVoteFilterChange("voted")}
+              onClick={() => onSortChange("popular")}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                currentVoteFilter === "voted"
+                currentSort === "popular"
                   ? "bg-accent-primary text-white"
                   : "bg-card-bg text-text-muted hover:text-foreground border border-card-border"
               }`}
             >
-              투표함
-            </button>
-            <button
-              onClick={() => onVoteFilterChange("not_voted")}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                currentVoteFilter === "not_voted"
-                  ? "bg-accent-primary text-white"
-                  : "bg-card-bg text-text-muted hover:text-foreground border border-card-border"
-              }`}
-            >
-              미투표
+              인기
             </button>
           </div>
-        )}
+
+          {/* 투표 필터 (로그인 시에만 표시) */}
+          {isLoggedIn && onVoteFilterChange && (
+            <div className="flex gap-1.5 flex-shrink-0 border-l border-card-border pl-3">
+              <button
+                onClick={() => onVoteFilterChange("all")}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  currentVoteFilter === "all"
+                    ? "bg-accent-primary text-white"
+                    : "bg-card-bg text-text-muted hover:text-foreground border border-card-border"
+                }`}
+              >
+                전체
+              </button>
+              <button
+                onClick={() => onVoteFilterChange("voted")}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  currentVoteFilter === "voted"
+                    ? "bg-accent-primary text-white"
+                    : "bg-card-bg text-text-muted hover:text-foreground border border-card-border"
+                }`}
+              >
+                투표함
+              </button>
+              <button
+                onClick={() => onVoteFilterChange("not_voted")}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  currentVoteFilter === "not_voted"
+                    ? "bg-accent-primary text-white"
+                    : "bg-card-bg text-text-muted hover:text-foreground border border-card-border"
+                }`}
+              >
+                미투표
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
