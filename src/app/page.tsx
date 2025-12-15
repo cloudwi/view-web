@@ -149,8 +149,8 @@ export default function Home() {
         />
       </div>
 
-      {/* Main Content - 헤더(64px) + 검색창(약 56px) + 하단 네비게이션 여백 */}
-      <main className="h-screen pt-36 pb-24 flex items-start justify-center">
+      {/* Main Content - 헤더(64px) + 검색창(모바일 2줄 약 88px, 데스크톱 56px) + 하단 네비게이션 여백 */}
+      <main className="h-screen pt-44 sm:pt-36 pb-24 flex items-start justify-center">
         <div className="w-full h-full relative">
           {/* Loading State */}
           {isLoading ? (
