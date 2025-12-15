@@ -1,4 +1,4 @@
-import { ViewsResponse, SortType, VoteFilterType, CommentsResponse, Comment } from "@/types/view";
+import { ViewsResponse, SortType, VoteFilterType, CommentsResponse, Comment, CategoriesResponse } from "@/types/view";
 import { AUTH_REQUIRED_EVENT } from "@/contexts/AuthContext";
 
 // 401 에러 발생 시 이벤트 발생
@@ -35,6 +35,7 @@ interface FetchViewsParams {
   cursor?: string | null;
   author?: "me" | null;
   vote_filter?: VoteFilterType;
+  category?: number | null;
 }
 
 export async function fetchViews({
@@ -43,6 +44,7 @@ export async function fetchViews({
   cursor = null,
   author = null,
   vote_filter = "all",
+  category = null,
 }: FetchViewsParams = {}): Promise<ViewsResponse> {
   const params = new URLSearchParams({
     sort,
@@ -61,6 +63,10 @@ export async function fetchViews({
     params.append("vote_filter", vote_filter);
   }
 
+  if (category) {
+    params.append("category", category.toString());
+  }
+
   // Next.js API Route를 통해 요청 (토큰 자동 포함)
   const response = await fetch(`/api/views?${params}`, {
     method: "GET",
@@ -70,6 +76,18 @@ export async function fetchViews({
   });
 
   return handleResponse<ViewsResponse>(response, "뷰 목록 조회 실패");
+}
+
+// 카테고리 목록 조회 API
+export async function fetchCategories(): Promise<CategoriesResponse> {
+  const response = await fetch("/api/categories", {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+    },
+  });
+
+  return handleResponse<CategoriesResponse>(response, "카테고리 조회 실패");
 }
 
 // 투표 API (Next.js API Route를 통해 프록시)

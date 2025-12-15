@@ -16,6 +16,8 @@ interface UseViewsReturn {
   currentSort: SortType;
   setVoteFilter: (filter: VoteFilterType) => void;
   currentVoteFilter: VoteFilterType;
+  setCategory: (category: number | null) => void;
+  currentCategory: number | null;
   updateViewVote: (viewId: number, optionId: number) => void;
   cancelViewVote: (viewId: number) => void;
 }
@@ -28,12 +30,15 @@ export function useViews(initialSort: SortType = "latest"): UseViewsReturn {
   const [hasNext, setHasNext] = useState(false);
   const [currentSort, setCurrentSort] = useState<SortType>(initialSort);
   const [currentVoteFilter, setCurrentVoteFilter] = useState<VoteFilterType>("all");
+  const [currentCategory, setCurrentCategory] = useState<number | null>(null);
 
   const cursorRef = useRef<string | null>(null);
   const sortRef = useRef<SortType>(initialSort);
   const voteFilterRef = useRef<VoteFilterType>("all");
+  const categoryRef = useRef<number | null>(null);
   sortRef.current = currentSort;
   voteFilterRef.current = currentVoteFilter;
+  categoryRef.current = currentCategory;
 
   // 초기 로드 또는 새로고침
   const refresh = useCallback(async () => {
@@ -41,7 +46,12 @@ export function useViews(initialSort: SortType = "latest"): UseViewsReturn {
     setError(null);
     cursorRef.current = null;
     try {
-      const response = await fetchViews({ sort: sortRef.current, cursor: null, vote_filter: voteFilterRef.current });
+      const response = await fetchViews({
+        sort: sortRef.current,
+        cursor: null,
+        vote_filter: voteFilterRef.current,
+        category: categoryRef.current,
+      });
       setViews(response.data);
       setHasNext(response.meta.has_next);
       cursorRef.current = response.meta.next_cursor;
@@ -58,7 +68,12 @@ export function useViews(initialSort: SortType = "latest"): UseViewsReturn {
 
     setIsLoadingMore(true);
     try {
-      const response = await fetchViews({ sort: sortRef.current, cursor: cursorRef.current, vote_filter: voteFilterRef.current });
+      const response = await fetchViews({
+        sort: sortRef.current,
+        cursor: cursorRef.current,
+        vote_filter: voteFilterRef.current,
+        category: categoryRef.current,
+      });
       setViews((prev) => [...prev, ...response.data]);
       setHasNext(response.meta.has_next);
       cursorRef.current = response.meta.next_cursor;
@@ -82,6 +97,15 @@ export function useViews(initialSort: SortType = "latest"): UseViewsReturn {
   const setVoteFilter = useCallback((filter: VoteFilterType) => {
     if (filter !== voteFilterRef.current) {
       setCurrentVoteFilter(filter);
+      setViews([]);
+      cursorRef.current = null;
+    }
+  }, []);
+
+  // 카테고리 변경
+  const setCategory = useCallback((category: number | null) => {
+    if (category !== categoryRef.current) {
+      setCurrentCategory(category);
       setViews([]);
       cursorRef.current = null;
     }
@@ -138,6 +162,8 @@ export function useViews(initialSort: SortType = "latest"): UseViewsReturn {
     currentSort,
     setVoteFilter,
     currentVoteFilter,
+    setCategory,
+    currentCategory,
     updateViewVote,
     cancelViewVote,
   };

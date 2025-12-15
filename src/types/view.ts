@@ -40,6 +40,16 @@ export interface ViewsResponse {
 export type SortType = "latest" | "popular";
 export type VoteFilterType = "all" | "voted" | "not_voted";
 
+// 카테고리 관련 타입
+export interface Category {
+  id: number;
+  name: string;
+}
+
+export interface CategoriesResponse {
+  data: Category[];
+}
+
 // 댓글 관련 타입
 export interface CommentAuthor {
   id: number;

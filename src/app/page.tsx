@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import ViewCard from "@/components/ViewCard";
 import SwipeIndicator from "@/components/SwipeIndicator";
 import SearchFilter from "@/components/SearchFilter";
+import CategoryFilter from "@/components/CategoryFilter";
 import CreateViewModal from "@/components/CreateViewModal";
 import { useViews } from "@/hooks/useViews";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,6 +32,8 @@ export default function Home() {
     currentSort,
     setVoteFilter,
     currentVoteFilter,
+    setCategory,
+    currentCategory,
     updateViewVote,
     cancelViewVote,
   } = useViews("latest");
@@ -38,7 +41,7 @@ export default function Home() {
   // 초기 로드 및 정렬/필터 변경 시 새로고침
   useEffect(() => {
     refresh();
-  }, [currentSort, currentVoteFilter, refresh]);
+  }, [currentSort, currentVoteFilter, currentCategory, refresh]);
 
   const handleSortChange = useCallback((sort: SortType) => {
     setSort(sort);
@@ -49,6 +52,11 @@ export default function Home() {
     setVoteFilter(filter);
     setCurrentIndex(0);
   }, [setVoteFilter]);
+
+  const handleCategoryChange = useCallback((categoryId: number | null) => {
+    setCategory(categoryId);
+    setCurrentIndex(0);
+  }, [setCategory]);
 
   // 뷰 생성 성공 시 새로고침 및 첫 번째 카드로 이동
   const handleCreateSuccess = useCallback(() => {
@@ -147,10 +155,16 @@ export default function Home() {
           currentVoteFilter={currentVoteFilter}
           isLoggedIn={isAuthenticated}
         />
+        <div className="mt-2">
+          <CategoryFilter
+            selectedCategory={currentCategory}
+            onCategoryChange={handleCategoryChange}
+          />
+        </div>
       </div>
 
-      {/* Main Content - 헤더(64px) + 검색창(모바일 2줄 약 88px, 데스크톱 56px) + 하단 네비게이션 여백 */}
-      <main className="h-screen pt-44 sm:pt-36 pb-24 flex items-start justify-center">
+      {/* Main Content - 헤더(64px) + 검색창 + 카테고리 필터 + 하단 네비게이션 여백 */}
+      <main className="h-screen pt-56 sm:pt-48 pb-24 flex items-start justify-center">
         <div className="w-full h-full relative">
           {/* Loading State */}
           {isLoading ? (
@@ -180,7 +194,7 @@ export default function Home() {
             </div>
           ) : (
             <div
-              key={`${currentIndex}-${currentSort}-${searchQuery}`}
+              key={`${currentIndex}-${currentSort}-${currentCategory}-${searchQuery}`}
               className="absolute inset-0 flex items-center justify-center animate-fade-in"
             >
               {filteredViews.length === 0 ? (
