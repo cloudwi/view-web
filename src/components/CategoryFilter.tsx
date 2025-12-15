@@ -34,7 +34,7 @@ export default function CategoryFilter({
 
   if (isLoading) {
     return (
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4">
+      <div className="flex justify-center gap-2 overflow-x-auto scrollbar-hide px-4">
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
@@ -52,7 +52,7 @@ export default function CategoryFilter({
   return (
     <div
       ref={scrollContainerRef}
-      className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-1"
+      className="flex justify-center gap-2 overflow-x-auto scrollbar-hide px-4 pb-1"
     >
       {/* 전체 칩 */}
       <button
